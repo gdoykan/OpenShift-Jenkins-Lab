@@ -52,13 +52,17 @@ pipeline {
         stage("Create Image") {
             steps {
                 script {
-                    openshift.withProject(devProject) {
-                        dir("openshift") {
-                            def result = openshift.process(readFile(file:"build.yaml"), "-p", "APPLICATION_NAME=${appName}", "-p", "IMAGE_TAG=${imageTag}")
-                            openshift.apply(result)
-                        }
-                        dir("target") {
-                            openshift.selector("bc", appName).startBuild("--from-file=${appName}-${imageTag}.jar").logs("-f")
+                    openshift.withCluster(){
+
+                    
+                        openshift.withProject(devProject) {
+                            dir("openshift") {
+                                def result = openshift.process(readFile(file:"build.yaml"), "-p", "APPLICATION_NAME=${appName}", "-p", "IMAGE_TAG=${imageTag}")
+                                openshift.apply(result)
+                            }
+                            dir("target") {
+                                openshift.selector("bc", appName).startBuild("--from-file=${appName}-${imageTag}.jar").logs("-f")
+                            }
                         }
                     }
                 }
